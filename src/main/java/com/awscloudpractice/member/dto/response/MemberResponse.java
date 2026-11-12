@@ -1,6 +1,6 @@
 package com.awscloudpractice.member.dto.response;
 
-public class MemberCreateResponse {
+public class MemberResponse {
 
     // 속성
     private Long memberId;
@@ -12,7 +12,7 @@ public class MemberCreateResponse {
     private String memberMbti;
 
     // 생성자
-    public MemberCreateResponse(Long memberId, String memberName, Integer memberAge, String memberMbti) {
+    public MemberResponse(Long memberId, String memberName, Integer memberAge, String memberMbti) {
         this.memberId = memberId;
         this.memberName = memberName;
         this.memberAge = memberAge;

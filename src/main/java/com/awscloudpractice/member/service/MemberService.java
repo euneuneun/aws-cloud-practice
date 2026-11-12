@@ -1,11 +1,12 @@
 package com.awscloudpractice.member.service;
 
 import com.awscloudpractice.member.dto.request.MemberCreateRequest;
-import com.awscloudpractice.member.dto.response.MemberCreateResponse;
+import com.awscloudpractice.member.dto.response.MemberResponse;
 import com.awscloudpractice.member.entity.Member;
+import com.awscloudpractice.member.exception.MemberNotFoundException;
 import com.awscloudpractice.member.repository.MemberRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MemberService {
@@ -20,7 +21,7 @@ public class MemberService {
 
     // 기능
     @Transactional
-    public MemberCreateResponse createMember(MemberCreateRequest request) {
+    public MemberResponse createMember(MemberCreateRequest request) {
 
         // 1. 엔티티 생성
         Member member = new Member(request.getMemberName(), request.getMemberAge(), request.getMemberMbti());
@@ -29,10 +30,26 @@ public class MemberService {
         Member saveMember = memberRepository.save(member);
 
         // 3. 엔티티 -> dto 변환
-        MemberCreateResponse response = new MemberCreateResponse(
+        MemberResponse response = new MemberResponse(
                 saveMember.getMemberId(),
                 saveMember.getMemberName(),
                 saveMember.getMemberAge(),
+                saveMember.getMemberMbti()
+        );
+
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public MemberResponse getMember(Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException());
+
+        MemberResponse response = new MemberResponse(
+                member.getMemberId(),
+                member.getMemberName(),
+                member.getMemberAge(),
                 member.getMemberMbti()
         );
 
