@@ -1,3 +1,10 @@
 spring:
   application:
     name: aws-cloud-practice
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
