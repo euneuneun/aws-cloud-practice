@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com'
+version = '0.0.1-SNAPSHOT'
+description = 'aws-cloud-practice'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // ===== Spring Boot =====
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'      // 헬스 체크(/actuator/health) 등 모니터링 엔드포인트
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'      // JPA(Hibernate)로 DB 접근
+    implementation 'org.springframework.boot:spring-boot-starter-validation'    // @Valid, @NotBlank 등 요청값 검증
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'        // REST API(Spring MVC) + 내장 Tomcat
+    implementation 'org.springframework.boot:spring-boot-h2console'             // H2 웹 콘솔(/h2-console), local 프로필에서 사용
+
+    // ===== Lombok =====
+    compileOnly 'org.projectlombok:lombok'          // @Slf4j로 log 객체 자동 생성 (로그 출력용)
+    annotationProcessor 'org.projectlombok:lombok'  // 컴파일할 때 Lombok 어노테이션을 처리
+
+    // ===== DB 드라이버 (코드에서 직접 쓰지 않고, 실행 시 yaml 설정에 따라 로드됨) =====
+    runtimeOnly 'com.h2database:h2'                 // 로컬 개발용 인메모리 DB (local 프로필)
+    runtimeOnly 'com.mysql:mysql-connector-j'       // 운영 DB(MySQL) 연결 (prod 프로필)
+
+    // ===== 테스트 =====
+    testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'   // MockMvc 등 웹 계층 테스트
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                    // JUnit 5 테스트 실행기
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
