@@ -1,5 +1,6 @@
-package com.awscloudpractice.member.exception;
+package com.awscloudpractice.common.exception;
 
+import com.awscloudpractice.member.exception.MemberNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
