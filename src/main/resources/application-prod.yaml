@@ -6,4 +6,27 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
+  config:
+    import:
+      - aws-parameterstore:/camp-health-app/prod/
+  cloud:
+    aws:
+      parameterstore:
+        enabled: true
+
+management:
+  endpoint:
+    health:
+      show-details: never
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    message: ${TEAM_NAME}
+
+logging:
+  level:
+    root: INFO

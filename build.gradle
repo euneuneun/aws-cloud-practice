@@ -26,6 +26,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'        // REST API(Spring MVC) + 내장 Tomcat
     implementation 'org.springframework.boot:spring-boot-h2console'             // H2 웹 콘솔(/h2-console), local 프로필에서 사용
 
+    // ===== Spring Cloud AWS =====
+    implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0-RC1')  // Spring Cloud AWS BOM: 아래 AWS 모듈들의 버전을 한 곳에서 맞춰 관리 (개별 버전 생략 가능)
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'           // AWS SSM Parameter Store 값을 설정(yaml, @Value)으로 불러옴 (DB 비밀번호 등)
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'                        // AWS S3 연동 (S3Client, S3Template으로 파일 업로드/다운로드)
+
     // ===== Lombok =====
     compileOnly 'org.projectlombok:lombok'          // @Slf4j로 log 객체 자동 생성 (로그 출력용)
     annotationProcessor 'org.projectlombok:lombok'  // 컴파일할 때 Lombok 어노테이션을 처리
