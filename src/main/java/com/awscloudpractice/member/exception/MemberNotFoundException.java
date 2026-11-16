@@ -8,8 +8,8 @@ public class MemberNotFoundException extends RuntimeException {
     private HttpStatus statusCode = HttpStatus.NOT_FOUND;
 
     // 생성자
-    public MemberNotFoundException() {
-        super("Member Not Found");
+    public MemberNotFoundException(Long memberId) {
+        super("Member not found. id=" + memberId);
     }
 
     // 기능

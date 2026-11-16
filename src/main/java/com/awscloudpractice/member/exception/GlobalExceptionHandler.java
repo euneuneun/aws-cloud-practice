@@ -13,6 +13,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MemberNotFoundException.class)
     public ResponseEntity<String> handleMemberNotFoundException(MemberNotFoundException e) {
 
+        log.error("[API - ERROR] Member not found", e);
+
         String message = e.getMessage();
         HttpStatus statusCode = e.getStatusCode();
 

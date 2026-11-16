@@ -44,7 +44,7 @@ public class MemberService {
     public MemberResponse getMember(Long memberId) {
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException());
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
 
         MemberResponse response = new MemberResponse(
                 member.getMemberId(),
