@@ -1,5 +1,7 @@
 package com.awscloudpractice.common.exception;
 
+import com.awscloudpractice.member.exception.FilesEmptyException;
+import com.awscloudpractice.member.exception.InvalidMediaTypeException;
 import com.awscloudpractice.member.exception.MemberNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
@@ -24,8 +29,10 @@ import java.util.Map;
  * 모든 예외는 ERROR 레벨 로그와 스택 트레이스를 남긴다.
  *
  * <ul>
- *   <li>400 Bad Request: 검증 실패, 요청 본문 파싱 실패, 파라미터 타입 오류</li>
+ *   <li>400 Bad Request: 빈 파일 업로드, 파일 파트 누락, 잘못된 multipart 요청, 검증 실패, 요청 본문 파싱 실패, 파라미터 타입 오류</li>
  *   <li>404 Not Found: 존재하지 않는 팀원, 존재하지 않는 URL</li>
+ *   <li>413 Content Too Large: 업로드 크기 제한 초과</li>
+ *   <li>415 Unsupported Media Type: 허용되지 않는 파일 형식 업로드</li>
  *   <li>500 Internal Server Error: 그 밖에 처리되지 않은 모든 예외</li>
  * </ul>
  */
@@ -43,6 +50,40 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleMemberNotFoundException(MemberNotFoundException e) {
 
         log.error("[API - ERROR] Member not found", e);
+
+        String message = e.getMessage();
+        HttpStatus statusCode = e.getStatusCode();
+
+        return ResponseEntity.status(statusCode).body(message);
+    }
+
+    /**
+     * 업로드한 파일이 비어 있을 때 처리한다.
+     *
+     * @param e 빈 파일을 업로드했을 때 발생하는 예외
+     * @return 400 상태 코드와 예외 메시지 (예: {@code "File is empty."})
+     */
+    @ExceptionHandler(FilesEmptyException.class)
+    public ResponseEntity<String> handleFilesEmptyException(FilesEmptyException e) {
+
+        log.error("[API - ERROR] File is empty.", e);
+
+        String message = e.getMessage();
+        HttpStatus statusCode = e.getStatusCode();
+
+        return ResponseEntity.status(statusCode).body(message);
+    }
+
+    /**
+     * 업로드한 파일의 형식이 맞지 않을 때 처리한다.
+     *
+     * @param e 허용되지 않는 파일 형식을 업로드했을 때 발생하는 예외
+     * @return 415 상태 코드와 예외 메시지 (예: {@code "Only image files (PNG, JPEG, WebP) can be uploaded."})
+     */
+    @ExceptionHandler(InvalidMediaTypeException.class)
+    public ResponseEntity<String> handleInvalidMediaTypeException(InvalidMediaTypeException e) {
+
+        log.error("[API - ERROR] Only image files (PNG, JPEG, WebP) can be uploaded.", e);
 
         String message = e.getMessage();
         HttpStatus statusCode = e.getStatusCode();
@@ -124,6 +165,54 @@ public class GlobalExceptionHandler {
         log.error("[API - ERROR] Resource not found", e);
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resource not found.");
+    }
+
+    /**
+     * 업로드한 파일이 허용 크기({@code max-file-size})를 넘었을 때 처리한다.
+     *
+     * @param e 업로드 크기 제한을 넘었을 때 발생하는 예외
+     * @return 413 상태 코드와 {@code "File size exceeds the limit."}
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<String> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+
+        log.error("[API - ERROR] File size exceeds the limit", e);
+
+        return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).body("File size exceeds the limit.");
+    }
+
+    /**
+     * multipart 요청에 필요한 파일 파트가 없을 때 처리한다.
+     *
+     * <p>예: {@code file} 파라미터 없이 업로드 요청
+     *
+     * @param e 누락된 파트 이름이 담긴 예외
+     * @return 400 상태 코드와 누락된 파트 이름이 담긴 메시지
+     */
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<String> handleMissingServletRequestPartException(MissingServletRequestPartException e) {
+
+        log.error("[API - ERROR] Missing request part", e);
+
+        String message = "Required part '" + e.getRequestPartName() + "' is missing.";
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+    }
+
+    /**
+     * multipart 요청이 아니거나 multipart 본문을 읽을 수 없을 때 처리한다.
+     *
+     * <p>예: 파일 업로드 API에 {@code Content-Type: application/json}으로 요청
+     *
+     * @param e multipart 처리 실패 예외
+     * @return 400 상태 코드와 {@code "Invalid multipart request."}
+     */
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<String> handleMultipartException(MultipartException e) {
+
+        log.error("[API - ERROR] Invalid multipart request", e);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid multipart request.");
     }
 
     /**

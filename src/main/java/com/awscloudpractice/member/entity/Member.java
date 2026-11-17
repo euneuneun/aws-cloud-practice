@@ -20,6 +20,9 @@ public class Member {
     @Column(nullable = false, length = 4)
     private String memberMbti;
 
+    @Column(nullable = true)
+    private String profileImage;
+
     // 생성자
     public Member() {
     }
@@ -45,5 +48,13 @@ public class Member {
 
     public String getMemberMbti() {
         return memberMbti;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void uploadProfile(String profileImage) {
+        this.profileImage = profileImage;
     }
 }
