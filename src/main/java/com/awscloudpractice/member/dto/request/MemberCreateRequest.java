@@ -1,5 +1,8 @@
 package com.awscloudpractice.member.dto.request;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -7,16 +10,17 @@ import jakarta.validation.constraints.Size;
 public class MemberCreateRequest {
 
     // 속성
-    @Size(max = 20, message = "20자 이내로 작성해주세요.")
-    @NotNull(message = "팀원 이름을 입력해주세요.")
+    @Size(max = 20, message = "Member name must be 20 characters or less.")
+    @NotBlank(message = "Member name is required.")
     private String memberName;
 
-    @NotNull(message = "팀원 나이를 입력해주세요.")
+    @Min(value = 1, message = "Member age must be at least 1.")
+    @Max(value = 150, message = "Member age must be 150 or less.")
+    @NotNull(message = "Member age is required.")
     private Integer memberAge;
 
-    @Size(max = 4, message = "4자 이내로 작성해주세요.")
-    @Pattern(regexp = "^[EI][SN][TF][JP]$", message = "올바른 MBTI를 대문자로 입력해주세요. (예: ENFP)")
-    @NotNull(message = "팀원 mbti를 입력해주세요.")
+    @Pattern(regexp = "^[EI][SN][TF][JP]$", message = "MBTI must be a valid 4-letter uppercase type. (e.g. ENFP)")
+    @NotNull(message = "Member MBTI is required.")
     private String memberMbti;
 
     // 생성자
