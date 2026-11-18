@@ -11,12 +11,15 @@ public class MemberResponse {
 
     private String memberMbti;
 
+    private String profileImage;
+
     // 생성자
-    public MemberResponse(Long memberId, String memberName, Integer memberAge, String memberMbti) {
+    public MemberResponse(Long memberId, String memberName, Integer memberAge, String memberMbti, String profileImage) {
         this.memberId = memberId;
         this.memberName = memberName;
         this.memberAge = memberAge;
         this.memberMbti = memberMbti;
+        this.profileImage = profileImage;
     }
 
     // 기능
@@ -34,5 +37,9 @@ public class MemberResponse {
 
     public String getMemberMbti() {
         return memberMbti;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
     }
 }

@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.time.Duration;
 
 @Service
 public class S3Service {
@@ -44,6 +46,20 @@ public class S3Service {
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload file to S3.", e);
         }
+    }
+
+    /**
+     * 유효기간이 duration인 PresignedUrl을 반환한다.
+     *
+     * @param key      이미지 저장
+     * @param duration PresignedUrl 유효기간
+     * @return url 반환
+     */
+    public String createPresignedGetUrl(String key, Duration duration) {
+
+        URL url = s3Template.createSignedGetURL(bucket, key, duration);
+
+        return url.toString();
     }
 
     /**

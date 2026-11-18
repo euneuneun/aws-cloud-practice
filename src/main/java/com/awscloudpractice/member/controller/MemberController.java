@@ -1,6 +1,7 @@
 package com.awscloudpractice.member.controller;
 
 import com.awscloudpractice.member.dto.request.MemberCreateRequest;
+import com.awscloudpractice.member.dto.response.FileDownloadUrlResponse;
 import com.awscloudpractice.member.dto.response.FileUploadResponse;
 import com.awscloudpractice.member.dto.response.MemberResponse;
 import com.awscloudpractice.member.service.MemberService;
@@ -50,8 +51,17 @@ public class MemberController {
             @PathVariable Long memberId,
             @RequestParam MultipartFile file
     ) {
+
         FileUploadResponse response = memberService.uploadProfile(memberId, file);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{memberId}/profile-image")
+    public ResponseEntity<FileDownloadUrlResponse> getProfileImage(@PathVariable Long memberId) {
+
+        FileDownloadUrlResponse response = memberService.getProfileImage(memberId);
+
+        return ResponseEntity.ok(response);
     }
 }

@@ -2,6 +2,7 @@ package com.awscloudpractice.member.service;
 
 import com.awscloudpractice.common.s3.S3Service;
 import com.awscloudpractice.member.dto.request.MemberCreateRequest;
+import com.awscloudpractice.member.dto.response.FileDownloadUrlResponse;
 import com.awscloudpractice.member.dto.response.FileUploadResponse;
 import com.awscloudpractice.member.dto.response.MemberResponse;
 import com.awscloudpractice.member.entity.Member;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 
@@ -25,6 +27,8 @@ public class MemberService {
             "image/jpeg",
             "image/webp"
     );
+
+    private static final Duration PROFILE_IMAGE_URL_EXPIRATION = Duration.ofDays(7);
 
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
@@ -53,7 +57,8 @@ public class MemberService {
                 saveMember.getMemberId(),
                 saveMember.getMemberName(),
                 saveMember.getMemberAge(),
-                saveMember.getMemberMbti()
+                saveMember.getMemberMbti(),
+                saveMember.getProfileImage()
         );
 
         return response;
@@ -69,7 +74,8 @@ public class MemberService {
                 member.getMemberId(),
                 member.getMemberName(),
                 member.getMemberAge(),
-                member.getMemberMbti()
+                member.getMemberMbti(),
+                member.getProfileImage()
         );
 
         return response;
@@ -114,6 +120,25 @@ public class MemberService {
 
         // 9. 엔티티 -> dto 변환
         FileUploadResponse response = new FileUploadResponse(key);
+
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public FileDownloadUrlResponse getProfileImage(Long memberId) {
+
+        // 1. 회원 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(()-> new MemberNotFoundException(memberId));
+
+        // 2. 회원 프로필 사진 key값 조회
+        String key = member.getProfileImageOrThrow();
+
+        // 3. presignerurl 값 만들기
+        String presignerUrl = s3Service.createPresignedGetUrl(key, PROFILE_IMAGE_URL_EXPIRATION);
+
+        // 4. 엔티티 -> dto 변환
+        FileDownloadUrlResponse response = new FileDownloadUrlResponse(presignerUrl);
 
         return response;
     }

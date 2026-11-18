@@ -1,6 +1,12 @@
 package com.awscloudpractice.member.entity;
 
-import jakarta.persistence.*;
+import com.awscloudpractice.member.exception.ProfileImageNotFoundException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Table(name = "members")
 @Entity
@@ -56,5 +62,14 @@ public class Member {
 
     public void uploadProfile(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public String getProfileImageOrThrow() {
+
+        if (getProfileImage() == null) {
+            throw new ProfileImageNotFoundException();
+        }
+
+        return this.profileImage;
     }
 }

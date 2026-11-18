@@ -3,6 +3,7 @@ package com.awscloudpractice.common.exception;
 import com.awscloudpractice.member.exception.FilesEmptyException;
 import com.awscloudpractice.member.exception.InvalidMediaTypeException;
 import com.awscloudpractice.member.exception.MemberNotFoundException;
+import com.awscloudpractice.member.exception.ProfileImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -84,6 +85,23 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidMediaTypeException(InvalidMediaTypeException e) {
 
         log.error("[API - ERROR] Only image files (PNG, JPEG, WebP) can be uploaded.", e);
+
+        String message = e.getMessage();
+        HttpStatus statusCode = e.getStatusCode();
+
+        return ResponseEntity.status(statusCode).body(message);
+    }
+
+    /**
+     * 프로필 사진이 존재하지 않을 때 처리한다.
+     *
+     * @param e 프로필 사진이 존재하지 않을 때 발생하는 예외
+     * @return 404 상태 코드와 예외 메세지 (예: {@code "profileImage not found."})
+     */
+    @ExceptionHandler(ProfileImageNotFoundException.class)
+    public ResponseEntity<String> handleProfileImageNotFoundException(ProfileImageNotFoundException e) {
+
+        log.error("[API - ERROR] profileImage not found.", e);
 
         String message = e.getMessage();
         HttpStatus statusCode = e.getStatusCode();
