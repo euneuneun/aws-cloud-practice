@@ -49,11 +49,11 @@ public class S3Service {
     }
 
     /**
-     * 유효기간이 duration인 PresignedUrl을 반환한다.
+     * 버킷의 파일을 유효기간(duration) 동안 조회할 수 있는 Presigned URL을 만든다.
      *
-     * @param key      이미지 저장
-     * @param duration PresignedUrl 유효기간
-     * @return url 반환
+     * @param key      조회할 파일의 S3 key (버킷 안 경로)
+     * @param duration Presigned URL 유효기간
+     * @return Presigned URL 문자열
      */
     public String createPresignedGetUrl(String key, Duration duration) {
 

@@ -99,9 +99,8 @@ public class MemberService {
             throw new InvalidMediaTypeException();
         }
 
-        // 4. uploadProfile 존재 검사
+        // 4. 기존 프로필 사진 key 보관 (새 업로드 성공 후 삭제하기 위해)
         String oldKey = member.getProfileImage();
-
 
         // 5. 저장할 파일 이름(key) 생성
         String ext = contentType.substring(contentType.indexOf("/") + 1);
@@ -114,7 +113,7 @@ public class MemberService {
         member.uploadProfile(key);
 
         // 8. 변경 전 key 삭제
-        if (oldKey != null ) {
+        if (oldKey != null) {
             s3Service.s3Delete(oldKey);
         }
 
@@ -129,16 +128,16 @@ public class MemberService {
 
         // 1. 회원 조회
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(()-> new MemberNotFoundException(memberId));
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
 
         // 2. 회원 프로필 사진 key값 조회
         String key = member.getProfileImageOrThrow();
 
-        // 3. presignerurl 값 만들기
-        String presignerUrl = s3Service.createPresignedGetUrl(key, PROFILE_IMAGE_URL_EXPIRATION);
+        // 3. Presigned URL 만들기
+        String presignedUrl = s3Service.createPresignedGetUrl(key, PROFILE_IMAGE_URL_EXPIRATION);
 
         // 4. 엔티티 -> dto 변환
-        FileDownloadUrlResponse response = new FileDownloadUrlResponse(presignerUrl);
+        FileDownloadUrlResponse response = new FileDownloadUrlResponse(presignedUrl);
 
         return response;
     }

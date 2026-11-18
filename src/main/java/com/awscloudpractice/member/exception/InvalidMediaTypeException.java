@@ -2,7 +2,7 @@ package com.awscloudpractice.member.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class InvalidMediaTypeException extends RuntimeException{
+public class InvalidMediaTypeException extends RuntimeException {
 
     // 속성
     private HttpStatus statusCode = HttpStatus.UNSUPPORTED_MEDIA_TYPE;
