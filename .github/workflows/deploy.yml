@@ -1,0 +1,122 @@
+name: CI/CD
+
+# PR(→ main): CI만 실행 (빌드 + 테스트 + 스타일 검사)
+# main push(= PR merge): CI 통과 후 CD(Docker Hub push + EC2 배포)까지 실행
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  # ===== CI: 빌드 + 테스트 + 스타일 검사 =====
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '17'
+          cache: gradle   # 의존성 캐시 → 다음 실행부터 빌드 속도 향상
+
+      - name: Build & Test
+        run: |
+          chmod +x gradlew
+          ./gradlew build   # 테스트 + spotlessCheck 포함
+
+      # CI 결과를 Discord로 알림 (PR 생성/수정, main merge 시)
+      - name: Discord 알림
+        if: always()   # 앞 단계가 실패해도 실행 → 실패 알림도 보냄
+        env:
+          # PR 제목 등은 run에 직접 넣지 않고 env로 전달 (스크립트 인젝션 방지)
+          WEBHOOK: ${{ secrets.DISCORD_CI_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          TITLE: ${{ github.event.pull_request.title || github.event.head_commit.message }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$STATUS" = "success" ]; then
+            ICON="✅ CI 통과"
+          else
+            ICON="❌ CI 실패"
+          fi
+          MESSAGE="$ICON
+          제목: $TITLE
+          작성자: $ACTOR
+          결과 보기: $RUN_URL"
+          jq -n --arg content "$MESSAGE" '{content: $content}' \
+            | curl -s -H "Content-Type: application/json" -d @- "$WEBHOOK"
+
+  # ===== CD: Docker Hub push → EC2 배포 =====
+  cd:
+    needs: ci                          # CI가 성공해야 실행
+    if: github.event_name == 'push'    # PR에서는 배포하지 않음
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '17'
+          cache: gradle
+
+      # job마다 새 서버라서 jar를 다시 만들어야 함 (테스트는 CI에서 이미 통과)
+      - name: Build jar
+        run: |
+          chmod +x gradlew
+          ./gradlew bootJar
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker build & push
+        run: |
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/aws-cloud-practice:latest .
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/aws-cloud-practice:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ vars.DOCKERHUB_USERNAME }}/aws-cloud-practice:latest
+            docker stop app || true
+            docker rm app || true
+            docker run -d --name app -p 8080:8080 \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              ${{ vars.DOCKERHUB_USERNAME }}/aws-cloud-practice:latest
+
+      # 배포 결과를 Discord로 알림
+      - name: Discord 알림
+        if: always()   # 앞 단계가 실패해도 실행 → 실패 알림도 보냄
+        env:
+          # 커밋 메시지 등은 run에 직접 넣지 않고 env로 전달 (스크립트 인젝션 방지)
+          WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          TITLE: ${{ github.event.head_commit.message }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$STATUS" = "success" ]; then
+            ICON="🚀 배포 완료"
+          else
+            ICON="❌ 배포 실패"
+          fi
+          MESSAGE="$ICON
+          제목: $TITLE
+          작성자: $ACTOR
+          결과 보기: $RUN_URL"
+          jq -n --arg content "$MESSAGE" '{content: $content}' \
+            | curl -s -H "Content-Type: application/json" -d @- "$WEBHOOK"
