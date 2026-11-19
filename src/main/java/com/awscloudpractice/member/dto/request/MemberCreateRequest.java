@@ -19,7 +19,9 @@ public class MemberCreateRequest {
     @NotNull(message = "Member age is required.")
     private Integer memberAge;
 
-    @Pattern(regexp = "^[EI][SN][TF][JP]$", message = "MBTI must be a valid 4-letter uppercase type. (e.g. ENFP)")
+    @Pattern(
+            regexp = "^[EI][SN][TF][JP]$",
+            message = "MBTI must be a valid 4-letter uppercase type. (e.g. ENFP)")
     @NotNull(message = "Member MBTI is required.")
     private String memberMbti;
 

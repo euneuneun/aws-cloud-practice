@@ -14,7 +14,12 @@ public class MemberResponse {
     private String profileImage;
 
     // 생성자
-    public MemberResponse(Long memberId, String memberName, Integer memberAge, String memberMbti, String profileImage) {
+    public MemberResponse(
+            Long memberId,
+            String memberName,
+            Integer memberAge,
+            String memberMbti,
+            String profileImage) {
         this.memberId = memberId;
         this.memberName = memberName;
         this.memberAge = memberAge;

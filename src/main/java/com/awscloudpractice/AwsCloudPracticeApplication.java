@@ -9,5 +9,4 @@ public class AwsCloudPracticeApplication {
     public static void main(String[] args) {
         SpringApplication.run(AwsCloudPracticeApplication.class, args);
     }
-
 }

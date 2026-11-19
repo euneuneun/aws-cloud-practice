@@ -10,23 +10,19 @@ import com.awscloudpractice.member.exception.FilesEmptyException;
 import com.awscloudpractice.member.exception.InvalidMediaTypeException;
 import com.awscloudpractice.member.exception.MemberNotFoundException;
 import com.awscloudpractice.member.repository.MemberRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class MemberService {
 
     // 속성
-    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
-            "image/png",
-            "image/jpeg",
-            "image/webp"
-    );
+    private static final Set<String> ALLOWED_IMAGE_TYPES =
+            Set.of("image/png", "image/jpeg", "image/webp");
 
     private static final Duration PROFILE_IMAGE_URL_EXPIRATION = Duration.ofDays(7);
 
@@ -34,10 +30,7 @@ public class MemberService {
     private final S3Service s3Service;
 
     // 생성자
-    public MemberService(
-            MemberRepository memberRepository,
-            S3Service s3Service
-    ) {
+    public MemberService(MemberRepository memberRepository, S3Service s3Service) {
         this.memberRepository = memberRepository;
         this.s3Service = s3Service;
     }
@@ -47,19 +40,21 @@ public class MemberService {
     public MemberResponse createMember(MemberCreateRequest request) {
 
         // 1. 엔티티 생성
-        Member member = new Member(request.getMemberName(), request.getMemberAge(), request.getMemberMbti());
+        Member member =
+                new Member(
+                        request.getMemberName(), request.getMemberAge(), request.getMemberMbti());
 
         // 2. 엔티티 저장
         Member saveMember = memberRepository.save(member);
 
         // 3. 엔티티 -> dto 변환
-        MemberResponse response = new MemberResponse(
-                saveMember.getMemberId(),
-                saveMember.getMemberName(),
-                saveMember.getMemberAge(),
-                saveMember.getMemberMbti(),
-                saveMember.getProfileImage()
-        );
+        MemberResponse response =
+                new MemberResponse(
+                        saveMember.getMemberId(),
+                        saveMember.getMemberName(),
+                        saveMember.getMemberAge(),
+                        saveMember.getMemberMbti(),
+                        saveMember.getProfileImage());
 
         return response;
     }
@@ -67,16 +62,18 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberResponse getMember(Long memberId) {
 
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException(memberId));
+        Member member =
+                memberRepository
+                        .findById(memberId)
+                        .orElseThrow(() -> new MemberNotFoundException(memberId));
 
-        MemberResponse response = new MemberResponse(
-                member.getMemberId(),
-                member.getMemberName(),
-                member.getMemberAge(),
-                member.getMemberMbti(),
-                member.getProfileImage()
-        );
+        MemberResponse response =
+                new MemberResponse(
+                        member.getMemberId(),
+                        member.getMemberName(),
+                        member.getMemberAge(),
+                        member.getMemberMbti(),
+                        member.getProfileImage());
 
         return response;
     }
@@ -85,8 +82,10 @@ public class MemberService {
     public FileUploadResponse uploadProfile(Long memberId, MultipartFile file) {
 
         // 1. 회원 조회
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException(memberId));
+        Member member =
+                memberRepository
+                        .findById(memberId)
+                        .orElseThrow(() -> new MemberNotFoundException(memberId));
 
         // 2. 빈 파일 검사
         if (file.isEmpty()) {
@@ -127,8 +126,10 @@ public class MemberService {
     public FileDownloadUrlResponse getProfileImage(Long memberId) {
 
         // 1. 회원 조회
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException(memberId));
+        Member member =
+                memberRepository
+                        .findById(memberId)
+                        .orElseThrow(() -> new MemberNotFoundException(memberId));
 
         // 2. 회원 프로필 사진 key값 조회
         String key = member.getProfileImageOrThrow();

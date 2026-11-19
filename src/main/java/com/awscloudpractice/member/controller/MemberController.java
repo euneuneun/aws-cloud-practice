@@ -31,7 +31,8 @@ public class MemberController {
 
     // 기능
     @PostMapping
-    public ResponseEntity<MemberResponse> createMember(@Valid @RequestBody MemberCreateRequest request) {
+    public ResponseEntity<MemberResponse> createMember(
+            @Valid @RequestBody MemberCreateRequest request) {
 
         MemberResponse response = memberService.createMember(request);
 
@@ -48,9 +49,7 @@ public class MemberController {
 
     @PostMapping("/{memberId}/profile-image")
     public ResponseEntity<FileUploadResponse> uploadProfile(
-            @PathVariable Long memberId,
-            @RequestParam MultipartFile file
-    ) {
+            @PathVariable Long memberId, @RequestParam MultipartFile file) {
 
         FileUploadResponse response = memberService.uploadProfile(memberId, file);
 

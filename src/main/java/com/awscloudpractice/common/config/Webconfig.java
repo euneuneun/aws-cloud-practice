@@ -16,7 +16,6 @@ public class Webconfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loggingInterceptor)
-                .excludePathPatterns("/actuator/**");
+        registry.addInterceptor(loggingInterceptor).excludePathPatterns("/actuator/**");
     }
 }

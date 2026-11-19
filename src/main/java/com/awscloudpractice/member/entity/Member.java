@@ -30,8 +30,7 @@ public class Member {
     private String profileImage;
 
     // 생성자
-    public Member() {
-    }
+    public Member() {}
 
     public Member(String memberName, Integer memberAge, String memberMbti) {
         this.memberName = memberName;
