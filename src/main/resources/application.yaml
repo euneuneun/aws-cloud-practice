@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: aws-cloud-practice
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      parameterstore:
+        enabled: false   # 기본(로컬)은 AWS Parameter Store 끔 → prod에서만 켬
+      s3:
+        bucket: camp-health-kde-files
+  servlet:
+    multipart:
+      max-file-size: 10MB # 파일 업로드 크기 제한
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
