@@ -37,9 +37,9 @@
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|:---:|---|
-| `memberName` | `string` | ✅ | 팀원 이름입니다. 공백 불가, 최대 20자. |
-| `memberAge` | `integer` | ✅ | 나이입니다. 1 이상 150 이하. |
-| `memberMbti` | `string` | ✅ | MBTI입니다. 대문자 4글자(`[EI][SN][TF][JP]`) 형식. 예: `ENFP` |
+| `memberName` | `string` | ✅ | 팀원 이름<br>• `null`, 빈 문자열, 공백만 있는 값 불가<br>• 최대 20자 (한글도 1글자로 계산)<br> |
+| `memberAge` | `integer` | ✅ | 나이<br>• 1 이상 150 이하 정수<br>|
+| `memberMbti` | `string` | ✅ | MBTI<br>• 정규식 `^[EI][SN][TF][JP]$`, 대문자 4글자 (예: `ENFP`, `ISTJ`)<br>• 소문자(`enfp`)·빈 문자열 불가<br> |
 
 #### 요청 예시
 
@@ -55,11 +55,11 @@ curl -X POST http://localhost:8080/api/members \
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `memberId` | `integer` | 생성된 팀원 식별자입니다. |
-| `memberName` | `string` | 팀원 이름입니다. |
-| `memberAge` | `integer` | 나이입니다. |
-| `memberMbti` | `string` | MBTI입니다. |
-| `profileImage` | `string` | 프로필 이미지의 S3 key입니다. 등록 직후에는 `null`입니다. |
+| `memberId` | `integer` | 팀원 ID |
+| `memberName` | `string` | 이름 |
+| `memberAge` | `integer` | 나이 |
+| `memberMbti` | `string` | MBTI |
+| `profileImage` | `string` | 프로필 이미지 S3 key. 등록 직후에는 `null` |
 
 ##### 응답 예시
 
@@ -77,8 +77,8 @@ curl -X POST http://localhost:8080/api/members \
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | 입력값 검증에 실패했습니다. `{"필드명": "메시지"}` 형태로 필드별 첫 메시지를 반환합니다. |
-| `400` | - | JSON 문법 오류 또는 타입 불일치입니다. `Invalid request body.`를 반환합니다. |
+| `400` | - | 입력값 검증에 실패한 경우 `{"필드명": "메시지"}` 형태로 필드별 첫 메시지를 반환합니다. |
+| `400` | - | JSON 문법이 틀리거나 타입이 맞지 않는 경우 `Invalid request body.`를 반환합니다. |
 
 ##### 응답 예시
 
@@ -109,7 +109,7 @@ curl -X POST http://localhost:8080/api/members \
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|:---:|---|
-| `memberId` | `integer` | ✅ | 팀원 식별자입니다. 숫자만 허용. |
+| `memberId` | `integer` | ✅ | 팀원 ID |
 
 #### 요청 예시
 
@@ -123,11 +123,11 @@ curl http://localhost:8080/api/members/1
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `memberId` | `integer` | 팀원 식별자입니다. |
-| `memberName` | `string` | 팀원 이름입니다. |
-| `memberAge` | `integer` | 나이입니다. |
-| `memberMbti` | `string` | MBTI입니다. |
-| `profileImage` | `string` | 프로필 이미지의 S3 key입니다. 이미지가 없으면 `null`입니다. |
+| `memberId` | `integer` | 팀원 ID |
+| `memberName` | `string` | 이름 |
+| `memberAge` | `integer` | 나이 |
+| `memberMbti` | `string` | MBTI |
+| `profileImage` | `string` | 프로필 이미지 S3 key. 이미지를 올리지 않았으면 `null` |
 
 ##### 응답 예시
 
@@ -145,8 +145,8 @@ curl http://localhost:8080/api/members/1
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | `memberId`가 숫자가 아닙니다. `Invalid value for parameter 'memberId'.`를 반환합니다. |
-| `404` | - | 존재하지 않는 팀원입니다. `Member not found. id={memberId}`를 반환합니다. |
+| `400` | - | `memberId`가 숫자가 아닌 경우 `Invalid value for parameter 'memberId'.`를 반환합니다. |
+| `404` | - | 존재하지 않는 팀원인 경우 `Member not found. id={memberId}`를 반환합니다. |
 
 ##### 응답 예시
 
@@ -174,7 +174,7 @@ Member not found. id=1
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|:---:|---|
-| `memberId` | `integer` | ✅ | 팀원 식별자입니다. 숫자만 허용. |
+| `memberId` | `integer` | ✅ | 팀원 ID |
 
 #### Request Body
 
@@ -182,7 +182,7 @@ Member not found. id=1
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|:---:|---|
-| `file` | `file` | ✅ | 업로드할 이미지입니다. `image/png`, `image/jpeg`, `image/webp`만 허용, 최대 10MB. |
+| `file` | `file` | ✅ | 업로드할 프로필 이미지<br>• 파트 이름은 반드시 `file`<br>• 허용 형식: `image/png`, `image/jpeg`, `image/webp`<br>• 형식은 파일 내용이 아니라 파트의 `Content-Type`으로 판단<br>• 최대 10MB<br>• 저장 key: `uploads/members/{UUID}.{확장자}` (확장자는 Content-Type 뒷부분, JPEG는 `.jpeg`)<br>• 기존 이미지가 있으면 업로드 성공 후 S3에서 삭제 |
 
 #### 요청 예시
 
@@ -197,7 +197,7 @@ curl -X POST http://localhost:8080/api/members/1/profile-image \
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `key` | `string` | 저장된 S3 object key입니다. |
+| `key` | `string` | 저장된 S3 key (`uploads/members/{UUID}.{확장자}`) |
 
 ##### 응답 예시
 
@@ -211,13 +211,13 @@ curl -X POST http://localhost:8080/api/members/1/profile-image \
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | 빈 파일입니다. `File is empty.`를 반환합니다. |
-| `400` | - | `file` 파트가 없습니다. `Required part 'file' is missing.`를 반환합니다. |
-| `400` | - | multipart 요청이 아닙니다. `Invalid multipart request.`를 반환합니다. |
-| `400` | - | `memberId`가 숫자가 아닙니다. `Invalid value for parameter 'memberId'.`를 반환합니다. |
-| `404` | - | 존재하지 않는 팀원입니다. `Member not found. id={memberId}`를 반환합니다. |
-| `413` | - | 파일이 10MB를 초과했습니다. `File size exceeds the limit.`를 반환합니다. |
-| `415` | - | 허용되지 않는 파일 형식입니다. `Only image files (PNG, JPEG, WebP) can be uploaded.`를 반환합니다. |
+| `400` | - | 빈 파일을 올린 경우 `File is empty.`를 반환합니다. |
+| `400` | - | `file` 파트가 없는 경우 `Required part 'file' is missing.`를 반환합니다. |
+| `400` | - | multipart 요청이 아닌 경우 `Invalid multipart request.`를 반환합니다. |
+| `400` | - | `memberId`가 숫자가 아닌 경우 `Invalid value for parameter 'memberId'.`를 반환합니다. |
+| `404` | - | 존재하지 않는 팀원인 경우 `Member not found. id={memberId}`를 반환합니다. |
+| `413` | - | 파일이 10MB를 초과한 경우 `File size exceeds the limit.`를 반환합니다. |
+| `415` | - | 허용되지 않는 파일 형식인 경우 `Only image files (PNG, JPEG, WebP) can be uploaded.`를 반환합니다. |
 
 ##### 응답 예시
 
@@ -245,7 +245,7 @@ Only image files (PNG, JPEG, WebP) can be uploaded.
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|:---:|---|
-| `memberId` | `integer` | ✅ | 팀원 식별자입니다. 숫자만 허용. |
+| `memberId` | `integer` | ✅ | 팀원 ID |
 
 #### 요청 예시
 
@@ -259,7 +259,7 @@ curl http://localhost:8080/api/members/1/profile-image
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `url` | `string` | 7일간 유효한 Presigned URL입니다. |
+| `url` | `string` | 7일간 유효한 Presigned URL |
 
 ##### 응답 예시
 
@@ -273,9 +273,9 @@ curl http://localhost:8080/api/members/1/profile-image
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | `memberId`가 숫자가 아닙니다. `Invalid value for parameter 'memberId'.`를 반환합니다. |
-| `404` | - | 존재하지 않는 팀원입니다. `Member not found. id={memberId}`를 반환합니다. |
-| `404` | - | 프로필 이미지를 아직 올리지 않았습니다. `profileImage not found.`를 반환합니다. |
+| `400` | - | `memberId`가 숫자가 아닌 경우 `Invalid value for parameter 'memberId'.`를 반환합니다. |
+| `404` | - | 존재하지 않는 팀원인 경우 `Member not found. id={memberId}`를 반환합니다. |
+| `404` | - | 프로필 이미지를 아직 올리지 않은 경우 `profileImage not found.`를 반환합니다. |
 
 ##### 응답 예시
 
