@@ -22,7 +22,7 @@
 
 ## 아키텍처
 
-<img src="docs/image/lv4.drawio.png" alt="아키텍처" width="70%">
+<img src="docs/image/lv5ing2.drawio.png" alt="아키텍처" width="80%">
 
 
 ## 빠른 시작
