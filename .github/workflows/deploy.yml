@@ -1,7 +1,7 @@
 name: CI/CD
 
 # PR(→ main): CI만 실행 (빌드 + 테스트 + 스타일 검사)
-# main push(= PR merge): CI 통과 후 CD(Docker Hub push + EC2 배포)까지 실행
+# main push(= PR merge): CI 통과 후 CD(Docker Hub push + ASG 인스턴스 새로 고침)까지 실행
 on:
   pull_request:
     branches: [ main ]
@@ -51,11 +51,14 @@ jobs:
           jq -n --arg content "$MESSAGE" '{content: $content}' \
             | curl -s -H "Content-Type: application/json" -d @- "$WEBHOOK"
 
-  # ===== CD: Docker Hub push → EC2 배포 =====
+  # ===== CD: Docker Hub push → ASG 인스턴스 새로 고침 =====
   cd:
     needs: ci                          # CI가 성공해야 실행
     if: github.event_name == 'push'    # PR에서는 배포하지 않음
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # AWS에 키 없이 로그인(OIDC)하려면 GitHub이 발급하는 토큰이 필요
+      contents: read    # Checkout용
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -94,19 +97,41 @@ jobs:
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/aws-cloud-practice:latest
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1
+      # Access Key 없이 OIDC로 AWS 역할을 잠깐 빌려 씀
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull ${{ vars.DOCKERHUB_USERNAME }}/aws-cloud-practice:latest
-            docker stop app || true
-            docker rm app || true
-            docker run -d --name app -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              ${{ vars.DOCKERHUB_USERNAME }}/aws-cloud-practice:latest
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # EC2는 Private Subnet이라 SSH로 접속할 수 없음
+      # → ASG에 "서버를 새로 만들어 교체해 줘"라고 요청하면, 새 서버가 사용자 데이터로 최신 이미지를 받아 실행
+      # MinHealthyPercentage 100 + MaxHealthyPercentage 200: 새 서버가 healthy가 된 뒤에 기존 서버를 지움 (중단 없음)
+      - name: Deploy (ASG instance refresh)
+        run: |
+          REFRESH_ID=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name app-asg \
+            --preferences '{"MinHealthyPercentage":100,"MaxHealthyPercentage":200,"InstanceWarmup":300}' \
+            --query InstanceRefreshId --output text)
+          echo "Instance refresh 시작: $REFRESH_ID"
+
+          # 교체가 끝날 때까지 30초마다 확인 (최대 20분)
+          for i in $(seq 1 40); do
+            STATUS=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name app-asg \
+              --instance-refresh-ids "$REFRESH_ID" \
+              --query 'InstanceRefreshes[0].Status' --output text)
+            echo "[$i] $STATUS"
+            if [ "$STATUS" = "Successful" ]; then
+              exit 0
+            fi
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "RollbackSuccessful" ]; then
+              exit 1
+            fi
+            sleep 30
+          done
+          echo "20분 안에 교체가 끝나지 않았습니다"
+          exit 1
 
       # 배포 결과를 Discord로 알림
       - name: Discord 알림
