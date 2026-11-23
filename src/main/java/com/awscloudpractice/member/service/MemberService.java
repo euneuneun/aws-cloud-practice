@@ -65,7 +65,7 @@ public class MemberService {
         Member member =
                 memberRepository
                         .findById(memberId)
-                        .orElseThrow(() -> new MemberNotFoundException(memberId));
+                        .orElseThrow(() -> new MemberNotFoundException());
 
         MemberResponse response =
                 new MemberResponse(
@@ -85,7 +85,7 @@ public class MemberService {
         Member member =
                 memberRepository
                         .findById(memberId)
-                        .orElseThrow(() -> new MemberNotFoundException(memberId));
+                        .orElseThrow(() -> new MemberNotFoundException());
 
         // 2. 빈 파일 검사
         if (file.isEmpty()) {
@@ -129,7 +129,7 @@ public class MemberService {
         Member member =
                 memberRepository
                         .findById(memberId)
-                        .orElseThrow(() -> new MemberNotFoundException(memberId));
+                        .orElseThrow(() -> new MemberNotFoundException());
 
         // 2. 회원 프로필 사진 key값 조회
         String key = member.getProfileImageOrThrow();

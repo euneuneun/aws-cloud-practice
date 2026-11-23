@@ -1,24 +1,19 @@
 package com.awscloudpractice.member.exception;
 
-import org.springframework.http.HttpStatus;
+import com.awscloudpractice.common.exception.BusinessException;
 
-public class MemberNotFoundException extends RuntimeException {
+public class MemberNotFoundException extends BusinessException {
 
     // 속성
-    private HttpStatus statusCode = HttpStatus.NOT_FOUND;
+    private MemberErrorCode memberErrorCode;
 
     // 생성자
-    public MemberNotFoundException(Long memberId) {
-        super("Member not found. id=" + memberId);
+    public MemberNotFoundException() {
+        super(MemberErrorCode.MEMBER_NOT_FOUND);
     }
 
     // 기능
-    @Override
-    public String getMessage() {
-        return super.getMessage();
-    }
-
-    public HttpStatus getStatusCode() {
-        return statusCode;
+    public MemberErrorCode getMemberErrorCode() {
+        return memberErrorCode;
     }
 }

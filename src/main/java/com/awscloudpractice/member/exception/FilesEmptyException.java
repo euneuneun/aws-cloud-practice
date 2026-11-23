@@ -1,19 +1,19 @@
 package com.awscloudpractice.member.exception;
 
-import org.springframework.http.HttpStatus;
+import com.awscloudpractice.common.exception.BusinessException;
 
-public class FilesEmptyException extends RuntimeException {
+public class FilesEmptyException extends BusinessException {
 
     // 속성
-    private HttpStatus statusCode = HttpStatus.BAD_REQUEST;
+    private MemberErrorCode memberErrorCode;
 
     // 생성자
     public FilesEmptyException() {
-        super("File is empty.");
+        super(MemberErrorCode.FILES_EMPTY);
     }
 
     // 기능
-    public HttpStatus getStatusCode() {
-        return statusCode;
+    public MemberErrorCode getMemberErrorCode() {
+        return memberErrorCode;
     }
 }

@@ -1,19 +1,19 @@
 package com.awscloudpractice.member.exception;
 
-import org.springframework.http.HttpStatus;
+import com.awscloudpractice.common.exception.BusinessException;
 
-public class ProfileImageNotFoundException extends RuntimeException {
+public class ProfileImageNotFoundException extends BusinessException {
 
     // 속성
-    private HttpStatus statusCode = HttpStatus.NOT_FOUND;
+    private MemberErrorCode memberErrorCode;
 
     // 생성자
     public ProfileImageNotFoundException() {
-        super("profileImage not found.");
+        super(MemberErrorCode.PROFILE_IMAGE_NOT_FOUND);
     }
 
     // 기능
-    public HttpStatus getStatusCode() {
-        return statusCode;
+    public MemberErrorCode getMemberErrorCode() {
+        return memberErrorCode;
     }
 }

@@ -1,19 +1,19 @@
 package com.awscloudpractice.member.exception;
 
-import org.springframework.http.HttpStatus;
+import com.awscloudpractice.common.exception.BusinessException;
 
-public class InvalidMediaTypeException extends RuntimeException {
+public class InvalidMediaTypeException extends BusinessException {
 
     // 속성
-    private HttpStatus statusCode = HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+    private MemberErrorCode memberErrorCode;
 
     // 생성자
     public InvalidMediaTypeException() {
-        super("Only image files (PNG, JPEG, WebP) can be uploaded.");
+        super(MemberErrorCode.INVALID_MEDIA_TYPE);
     }
 
     // 기능
-    public HttpStatus getStatusCode() {
-        return statusCode;
+    public MemberErrorCode getMemberErrorCode() {
+        return memberErrorCode;
     }
 }
