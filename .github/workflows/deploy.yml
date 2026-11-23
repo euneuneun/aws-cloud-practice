@@ -55,6 +55,11 @@ jobs:
   cd:
     needs: ci                          # CI가 성공해야 실행
     if: github.event_name == 'push'    # PR에서는 배포하지 않음
+    # 배포를 한 번에 하나씩 실행: 새로 고침 진행 중에 다음 배포가 시작되면 InstanceRefreshInProgress로 실패하므로
+    # 진행 중인 배포는 취소하지 않고 끝날 때까지 기다림
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       id-token: write   # AWS에 키 없이 로그인(OIDC)하려면 GitHub이 발급하는 토큰이 필요
@@ -125,7 +130,7 @@ jobs:
             if [ "$STATUS" = "Successful" ]; then
               exit 0
             fi
-            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "RollbackSuccessful" ]; then
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "RollbackSuccessful" ] || [ "$STATUS" = "RollbackFailed" ]; then
               exit 1
             fi
             sleep 30
