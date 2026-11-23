@@ -19,13 +19,19 @@
 | `GET` | `/actuator/health` | 헬스 체크 |
 | `GET` | `/actuator/info` | 팀 이름 (Parameter Store `TEAM_NAME`) |
 
-에러 응답은 입력값 검증 실패를 제외하면 JSON이 아닌 문자열 한 줄로 반환됩니다. 현재 응답 본문에는 별도의 에러 코드가 없습니다.
+에러 응답은 모두 같은 JSON 형태(`errorCode`, `message`)로 반환됩니다. 입력값 검증에 실패한 경우에만 `fieldErrors`가 추가됩니다. 에러 코드 전체 목록은 아래 **예외 처리** 항목에 있습니다.
 
+```json
+{
+  "errorCode": "MEMBER_NOT_FOUND",
+  "message": "Member not found."
+}
+```
+
+## 팀원 등록
 <table>
 <tr>
 <td width="1000">
-
-## 팀원 등록
 
 ### `POST` /api/members
 
@@ -77,15 +83,19 @@ curl -X POST http://localhost:8080/api/members \
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | 입력값 검증에 실패한 경우 `{"필드명": "메시지"}` 형태로 필드별 첫 메시지를 반환합니다. |
-| `400` | - | JSON 문법이 틀리거나 타입이 맞지 않는 경우 `Invalid request body.`를 반환합니다. |
+| `400` | `COMMON_INVALID_INPUT_VALUE` | 입력값 검증에 실패한 경우. `fieldErrors`에 필드별 첫 메시지를 담습니다. |
+| `400` | `COMMON_INVALID_INPUT_VALUE` | JSON 문법이 틀리거나 타입이 맞지 않는 경우 |
 
 ##### 응답 예시
 
 ```json
 {
-  "memberName": "Member name is required.",
-  "memberMbti": "MBTI must be a valid 4-letter uppercase type. (e.g. ENFP)"
+  "errorCode": "COMMON_INVALID_INPUT_VALUE",
+  "message": "Invalid input value.",
+  "fieldErrors": {
+    "memberName": "Member name is required.",
+    "memberMbti": "MBTI must be a valid 4-letter uppercase type. (e.g. ENFP)"
+  }
 }
 ```
 
@@ -93,11 +103,11 @@ curl -X POST http://localhost:8080/api/members \
 </tr>
 </table>
 
+
+## 팀원 조회
 <table>
 <tr>
 <td width="1000">
-
-## 팀원 조회
 
 ### `GET` /api/members/{memberId}
 
@@ -145,24 +155,26 @@ curl http://localhost:8080/api/members/1
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | `memberId`가 숫자가 아닌 경우 `Invalid value for parameter 'memberId'.`를 반환합니다. |
-| `404` | - | 존재하지 않는 팀원인 경우 `Member not found. id={memberId}`를 반환합니다. |
+| `400` | `COMMON_INVALID_INPUT_VALUE` | `memberId`가 숫자가 아닌 경우 |
+| `404` | `MEMBER_NOT_FOUND` | 존재하지 않는 팀원인 경우 |
 
 ##### 응답 예시
 
-```text
-Member not found. id=1
+```json
+{
+  "errorCode": "MEMBER_NOT_FOUND",
+  "message": "Member not found."
+}
 ```
 
 </td>
 </tr>
 </table>
 
+## 프로필 이미지 업로드
 <table>
 <tr>
 <td width="1000">
-
-## 프로필 이미지 업로드
 
 ### `POST` /api/members/{memberId}/profile-image
 
@@ -211,29 +223,31 @@ curl -X POST http://localhost:8080/api/members/1/profile-image \
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | 빈 파일을 올린 경우 `File is empty.`를 반환합니다. |
-| `400` | - | `file` 파트가 없는 경우 `Required part 'file' is missing.`를 반환합니다. |
-| `400` | - | multipart 요청이 아닌 경우 `Invalid multipart request.`를 반환합니다. |
-| `400` | - | `memberId`가 숫자가 아닌 경우 `Invalid value for parameter 'memberId'.`를 반환합니다. |
-| `404` | - | 존재하지 않는 팀원인 경우 `Member not found. id={memberId}`를 반환합니다. |
-| `413` | - | 파일이 10MB를 초과한 경우 `File size exceeds the limit.`를 반환합니다. |
-| `415` | - | 허용되지 않는 파일 형식인 경우 `Only image files (PNG, JPEG, WebP) can be uploaded.`를 반환합니다. |
+| `400` | `MEMBER_FILES_EMPTY` | 빈 파일을 올린 경우 |
+| `400` | `COMMON_INVALID_INPUT_VALUE` | `file` 파트가 없는 경우 |
+| `400` | `COMMON_INVALID_INPUT_VALUE` | multipart 요청이 아닌 경우 |
+| `400` | `COMMON_INVALID_INPUT_VALUE` | `memberId`가 숫자가 아닌 경우 |
+| `404` | `MEMBER_NOT_FOUND` | 존재하지 않는 팀원인 경우 |
+| `413` | `COMMON_FILE_SIZE_EXCEEDED` | 파일이 10MB를 초과한 경우 |
+| `415` | `MEMBER_INVALID_MEDIA_TYPE` | 허용되지 않는 파일 형식인 경우 |
 
 ##### 응답 예시
 
-```text
-Only image files (PNG, JPEG, WebP) can be uploaded.
+```json
+{
+  "errorCode": "MEMBER_INVALID_MEDIA_TYPE",
+  "message": "Only image files (PNG, JPEG, WebP) can be uploaded."
+}
 ```
 
 </td>
 </tr>
 </table>
 
+## 프로필 이미지 URL 조회
 <table>
 <tr>
 <td width="1000">
-
-## 프로필 이미지 URL 조회
 
 ### `GET` /api/members/{memberId}/profile-image
 
@@ -273,14 +287,17 @@ curl http://localhost:8080/api/members/1/profile-image
 
 | HTTP 상태 | 에러 코드 | 설명 |
 |---|---|---|
-| `400` | - | `memberId`가 숫자가 아닌 경우 `Invalid value for parameter 'memberId'.`를 반환합니다. |
-| `404` | - | 존재하지 않는 팀원인 경우 `Member not found. id={memberId}`를 반환합니다. |
-| `404` | - | 프로필 이미지를 아직 올리지 않은 경우 `profileImage not found.`를 반환합니다. |
+| `400` | `COMMON_INVALID_INPUT_VALUE` | `memberId`가 숫자가 아닌 경우 |
+| `404` | `MEMBER_NOT_FOUND` | 존재하지 않는 팀원인 경우 |
+| `404` | `MEMBER_PROFILE_IMAGE_NOT_FOUND` | 프로필 이미지를 아직 올리지 않은 경우 |
 
 ##### 응답 예시
 
-```text
-profileImage not found.
+```json
+{
+  "errorCode": "MEMBER_PROFILE_IMAGE_NOT_FOUND",
+  "message": "Profile image not found."
+}
 ```
 
 </td>
@@ -292,20 +309,29 @@ profileImage not found.
 
 `@RestControllerAdvice`(`GlobalExceptionHandler`)에서 한 곳에 모아 처리합니다.
 
-| 상황 | HTTP | 응답 |
-|---|---|---|
-| 존재하지 않는 팀원 | 404 | `Member not found. id={id}` |
-| 프로필 이미지 미등록 상태에서 조회 | 404 | `profileImage not found.` |
-| 존재하지 않는 URL | 404 | `Resource not found.` |
-| 입력값 검증 실패 (이름 공백·20자 초과, 나이 1~150 밖, MBTI 형식) | 400 | `{"필드명": "메시지"}` |
-| JSON 문법 오류 · 타입 불일치 | 400 | `Invalid request body.` |
-| 경로 변수 타입 오류 (`/api/members/abc`) | 400 | `Invalid value for parameter 'memberId'.` |
-| 빈 파일 업로드 | 400 | `File is empty.` |
-| `file` 파트 누락 | 400 | `Required part 'file' is missing.` |
-| multipart가 아닌 요청 | 400 | `Invalid multipart request.` |
-| 허용되지 않는 파일 형식 | 415 | `Only image files (PNG, JPEG, WebP) can be uploaded.` |
-| 파일 용량 초과 (10MB) | 413 | `File size exceeds the limit.` |
-| 그 밖의 예외 | 500 | `Internal Server Error` (상세는 로그에만) |
+**구조**
+- `ErrorCode` (인터페이스): 에러 코드 · 메시지 · HTTP 상태를 꺼내는 공통 규칙
+- `CommonErrorCode` (enum): Spring이 던지는 공통 예외용 코드 (`COMMON_` 접두사)
+- `MemberErrorCode` (enum): 팀원 도메인 예외용 코드 (`MEMBER_` 접두사)
+- `BusinessException`: 도메인 예외의 부모 클래스. `ErrorCode`를 담고 있어, 핸들러 하나(`handleBusinessException`)로 모든 도메인 예외를 처리합니다.
+- `ErrorResponse`: 모든 에러 응답 형태 (`errorCode`, `message`, 검증 실패 시 `fieldErrors`). 값이 null인 항목은 응답에서 빠집니다.
+
+| 상황 | HTTP | 에러 코드 | 메시지 |
+|---|---|---|---|
+| 존재하지 않는 팀원 | 404 | `MEMBER_NOT_FOUND` | `Member not found.` |
+| 프로필 이미지 미등록 상태에서 조회 | 404 | `MEMBER_PROFILE_IMAGE_NOT_FOUND` | `Profile image not found.` |
+| 빈 파일 업로드 | 400 | `MEMBER_FILES_EMPTY` | `File is empty.` |
+| 허용되지 않는 파일 형식 | 415 | `MEMBER_INVALID_MEDIA_TYPE` | `Only image files (PNG, JPEG, WebP) can be uploaded.` |
+| 입력값 검증 실패 (이름 공백·20자 초과, 나이 1~150 밖, MBTI 형식) | 400 | `COMMON_INVALID_INPUT_VALUE` | `Invalid input value.` + `fieldErrors` |
+| JSON 문법 오류 · 타입 불일치 | 400 | `COMMON_INVALID_INPUT_VALUE` | `Invalid input value.` |
+| 경로 변수 타입 오류 (`/api/members/abc`) | 400 | `COMMON_INVALID_INPUT_VALUE` | `Invalid input value.` |
+| `file` 파트 누락 | 400 | `COMMON_INVALID_INPUT_VALUE` | `Invalid input value.` |
+| multipart가 아닌 요청 | 400 | `COMMON_INVALID_INPUT_VALUE` | `Invalid input value.` |
+| 존재하지 않는 URL | 404 | `COMMON_RESOURCE_NOT_FOUND` | `Resource not found.` |
+| 파일 용량 초과 (10MB) | 413 | `COMMON_FILE_SIZE_EXCEEDED` | `File size exceeds the limit.` |
+| 그 밖의 예외 | 500 | `COMMON_INTERNAL_SERVER_ERROR` | `Internal Server Error` (상세는 로그에만) |
+
+400 공통 예외는 클라이언트 입장에서 모두 "요청 값이 잘못됨"이라 코드 하나로 합쳤고, 어떤 예외였는지는 로그의 예외 클래스로 확인합니다.
 
 **로그 전략**
 - 모든 API 요청: `LoggingInterceptor` → `INFO [API - LOG] Method: POST, URL: /api/members`
@@ -333,8 +359,9 @@ src/main/java/com/awscloudpractice
 ├── AwsCloudPracticeApplication.java
 ├── common
 │   ├── config          # Webconfig: 인터셉터 등록
-│   ├── exception       # GlobalExceptionHandler: 전역 예외 처리
+│   ├── exception       # GlobalExceptionHandler, BusinessException, ErrorCode, CommonErrorCode
 │   ├── interceptor     # LoggingInterceptor: [API - LOG] 요청 로그
+│   ├── response        # ErrorResponse: 공통 에러 응답 형태
 │   └── s3              # S3Service: 업로드, 삭제, Presigned URL 생성
 └── member
     ├── controller      # MemberController
@@ -342,7 +369,7 @@ src/main/java/com/awscloudpractice
     │   ├── request     # MemberCreateRequest
     │   └── response    # MemberResponse, FileUploadResponse, FileDownloadUrlResponse
     ├── entity          # Member
-    ├── exception       # MemberNotFound, ProfileImageNotFound, FilesEmpty, InvalidMediaType
+    ├── exception       # MemberErrorCode, MemberNotFound, ProfileImageNotFound, FilesEmpty, InvalidMediaType
     ├── repository      # MemberRepository
     └── service         # MemberService
 src/main/resources

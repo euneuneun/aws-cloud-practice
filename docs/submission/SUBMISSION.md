@@ -58,5 +58,15 @@
 <a id="lv5"></a>
 ## LV 5 · HTTPS 도메인 / Target Group
 
+**1) HTTPS 적용된 도메인 URL**
+
+<img src="image/lv5-1.png" width="60%">
+
+**2) Target Group(대상 그룹) 이미지**
+
+<img src="image/lv5-2.png" width="60%">
+
+
 <a id="lv6"></a>
 ## LV 6 · CloudFront 이미지 URL
+https://d3hzsvsrcwxkah.cloudfront.net/uploads/members/cfecf69d-6600-4b1f-9d89-69921f21a882.png
