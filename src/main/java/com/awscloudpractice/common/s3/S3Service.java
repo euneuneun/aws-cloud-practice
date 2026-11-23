@@ -4,8 +4,6 @@ import io.awspring.cloud.s3.ObjectMetadata;
 import io.awspring.cloud.s3.S3Template;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,19 +41,21 @@ public class S3Service {
         }
     }
 
-    /**
-     * 버킷의 파일을 유효기간(duration) 동안 조회할 수 있는 Presigned URL을 만든다.
-     *
-     * @param key 조회할 파일의 S3 key (버킷 안 경로)
-     * @param duration Presigned URL 유효기간
-     * @return Presigned URL 문자열
-     */
-    public String createPresignedGetUrl(String key, Duration duration) {
-
-        URL url = s3Template.createSignedGetURL(bucket, key, duration);
-
-        return url.toString();
-    }
+    // Presigned URL 방식
+    //
+    // /**
+    //  * 버킷의 파일을 유효기간(duration) 동안 조회할 수 있는 Presigned URL을 만든다.
+    //  *
+    //  * @param key 조회할 파일의 S3 key (버킷 안 경로)
+    //  * @param duration Presigned URL 유효기간
+    //  * @return Presigned URL 문자열
+    //  */
+    // public String createPresignedGetUrl(String key, Duration duration) {
+    //
+    //     URL url = s3Template.createSignedGetURL(bucket, key, duration);
+    //
+    //     return url.toString();
+    // }
 
     /**
      * 설정된 S3 버킷에서 파일을 영구 삭제한다.
