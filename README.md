@@ -20,9 +20,10 @@
 * 🔍[INFRA.md](docs/INFRA.md) — 인프라 상세
 * 📝[DESIGN.md](docs/DESIGN.md) — API 명세, 테이블 설계, 프로젝트 구조
 
+<a id="architecture"></a>
 ## 아키텍처
 
-<img src="docs/image/lv5ing2.drawio.png" alt="아키텍처" width="80%">
+<img src="docs/image/lv6.png" alt="아키텍처" width="80%">
 
 
 ## 빠른 시작
@@ -50,7 +51,7 @@ curl localhost:8080/actuator/health   # {"status":"UP"}
 | 프로필 | DB | Parameter Store | DDL |
 |---|---|---|---|
 | `local` | H2 인메모리 (MySQL 모드) | 사용 안 함 | `create-drop` |
-| `prod` | MySQL (RDS) | 사용 | `update` |
+| `prod` | MySQL (RDS) | 사용 | 사용 안 함 (`none`) |
 
 prod는 DB 접속 정보를 **실행 시점에 Parameter Store(`/camp-health-app/prod/`)에서 주입**받으므로 아래가 준비되어 있어야 합니다.
 

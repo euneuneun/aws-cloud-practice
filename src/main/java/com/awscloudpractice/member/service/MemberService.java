@@ -10,9 +10,9 @@ import com.awscloudpractice.member.exception.FilesEmptyException;
 import com.awscloudpractice.member.exception.InvalidMediaTypeException;
 import com.awscloudpractice.member.exception.MemberNotFoundException;
 import com.awscloudpractice.member.repository.MemberRepository;
-import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,15 +24,21 @@ public class MemberService {
     private static final Set<String> ALLOWED_IMAGE_TYPES =
             Set.of("image/png", "image/jpeg", "image/webp");
 
-    private static final Duration PROFILE_IMAGE_URL_EXPIRATION = Duration.ofDays(7);
+    // Presigned URL 유효기간
+    // private static final Duration PROFILE_IMAGE_URL_EXPIRATION = Duration.ofDays(7);
 
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
+    private final String cloudFrontDomain;
 
     // 생성자
-    public MemberService(MemberRepository memberRepository, S3Service s3Service) {
+    public MemberService(
+            MemberRepository memberRepository,
+            S3Service s3Service,
+            @Value("${cloudfront.domain}") String cloudFrontDomain) {
         this.memberRepository = memberRepository;
         this.s3Service = s3Service;
+        this.cloudFrontDomain = cloudFrontDomain;
     }
 
     // 기능
@@ -65,7 +71,7 @@ public class MemberService {
         Member member =
                 memberRepository
                         .findById(memberId)
-                        .orElseThrow(() -> new MemberNotFoundException(memberId));
+                        .orElseThrow(() -> new MemberNotFoundException());
 
         MemberResponse response =
                 new MemberResponse(
@@ -85,7 +91,7 @@ public class MemberService {
         Member member =
                 memberRepository
                         .findById(memberId)
-                        .orElseThrow(() -> new MemberNotFoundException(memberId));
+                        .orElseThrow(() -> new MemberNotFoundException());
 
         // 2. 빈 파일 검사
         if (file.isEmpty()) {
@@ -129,16 +135,19 @@ public class MemberService {
         Member member =
                 memberRepository
                         .findById(memberId)
-                        .orElseThrow(() -> new MemberNotFoundException(memberId));
+                        .orElseThrow(() -> new MemberNotFoundException());
 
         // 2. 회원 프로필 사진 key값 조회
         String key = member.getProfileImageOrThrow();
 
-        // 3. Presigned URL 만들기
-        String presignedUrl = s3Service.createPresignedGetUrl(key, PROFILE_IMAGE_URL_EXPIRATION);
+        // 3. Presigned URL 만들기 (이전 방식)
+        // String presignedUrl = s3Service.createPresignedGetUrl(key, PROFILE_IMAGE_URL_EXPIRATION);
+
+        // 3. CloudFront URL 만들기 (오리진 경로가 비어 있어 URL 경로 = S3 key)
+        String imageUrl = "https://" + cloudFrontDomain + "/" + key;
 
         // 4. 엔티티 -> dto 변환
-        FileDownloadUrlResponse response = new FileDownloadUrlResponse(presignedUrl);
+        FileDownloadUrlResponse response = new FileDownloadUrlResponse(imageUrl);
 
         return response;
     }
