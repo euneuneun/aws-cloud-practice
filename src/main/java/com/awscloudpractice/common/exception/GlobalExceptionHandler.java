@@ -21,9 +21,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 /**
  * 모든 컨트롤러에서 발생한 예외를 한 곳에서 처리하는 전역 예외 처리기.
  *
- * <p>모든 응답은 {@link ErrorResponse} 형태({@code errorCode}, {@code message})로 내려가고, 모든 예외는 ERROR 레벨 로그와
- * 스택 트레이스를 남긴다.
- *
  * <ul>
  *   <li>도메인 예외({@link BusinessException}): 각 도메인 ErrorCode에 정의된 상태 코드와 메시지
  *   <li>400 Bad Request: 검증 실패, 요청 본문 파싱 실패, 파라미터 타입 오류, 파일 파트 누락, 잘못된 multipart 요청
@@ -46,8 +43,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
 
-        log.error("[API - ERROR]", e);
-
         ErrorCode errorCode = e.getErrorCode();
         ErrorResponse response = new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
 
@@ -69,16 +64,19 @@ public class GlobalExceptionHandler {
 
         Map<String, String> errors = new LinkedHashMap<>();
 
-        BindingResult bindingResult = e.getBindingResult(); // 검증 결과 전체
-        List<FieldError> fieldErrors = bindingResult.getFieldErrors(); // 필드 에러 목록
+        // 검증 결과 전체
+        BindingResult bindingResult = e.getBindingResult();
+        // 필드 에러 목록
+        List<FieldError> fieldErrors = bindingResult.getFieldErrors();
 
         for (FieldError error : fieldErrors) {
-            String field = error.getField(); // 필드명: "memberMbti"
-            String message = error.getDefaultMessage(); // 메시지: "Member MBTI is required."
-            errors.putIfAbsent(field, message); // 필드별 첫 메시지만 저장
+            // 필드명: "memberMbti"
+            String field = error.getField();
+            // 메시지: "Member MBTI is required."
+            String message = error.getDefaultMessage();
+            // 필드별 첫 메시지만 저장
+            errors.putIfAbsent(field, message);
         }
-
-        log.error("[API - ERROR] Validation failed: {}", errors, e);
 
         CommonErrorCode errorCode = CommonErrorCode.INVALID_INPUT_VALUE;
         ErrorResponse response =
@@ -109,8 +107,6 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ErrorResponse> handleInvalidInputException(Exception e) {
 
-        log.error("[API - ERROR] Invalid input value", e);
-
         CommonErrorCode errorCode = CommonErrorCode.INVALID_INPUT_VALUE;
         ErrorResponse response = new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
 
@@ -122,8 +118,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNoResourceFoundException(
             NoResourceFoundException e) {
 
-        log.error("[API - ERROR] Resource not found", e);
-
         CommonErrorCode errorCode = CommonErrorCode.RESOURCE_NOT_FOUND;
         ErrorResponse response = new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
 
@@ -134,8 +128,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(
             MaxUploadSizeExceededException e) {
-
-        log.error("[API - ERROR] File size exceeds the limit", e);
 
         CommonErrorCode errorCode = CommonErrorCode.FILE_SIZE_EXCEEDED;
         ErrorResponse response = new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
@@ -150,8 +142,6 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-
-        log.error("[API - ERROR] Unhandled exception", e);
 
         CommonErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
         ErrorResponse response = new ErrorResponse(errorCode.getCode(), errorCode.getMessage());

@@ -1,6 +1,8 @@
 package com.awscloudpractice.common.config;
 
+import com.awscloudpractice.common.aop.LoggingAspect;
 import com.awscloudpractice.common.interceptor.LoggingInterceptor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -17,5 +19,10 @@ public class Webconfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loggingInterceptor).excludePathPatterns("/actuator/**");
+    }
+
+    @Bean
+    public LoggingAspect loggingAspect() {
+        return new LoggingAspect();
     }
 }

@@ -10,8 +10,8 @@
 | LV 2 | RDS 인바운드 규칙 캡처 | [보기](#lv2-2) |
 | LV 3 | Presigned URL 접근 성공 (IAM Role) | [보기](#lv3) |
 | LV 4 | Actions 성공 · `docker ps` 캡처 | [보기](#lv4) |
-| LV 5 | HTTPS 도메인 · Target Group 캡처 | |
-| LV 6 | CloudFront 이미지 URL | |
+| LV 5 | HTTPS 도메인 · Target Group 캡처 | `https://api.ked-aws.click` · [캡처](#lv5) |
+| LV 6 | CloudFront 이미지 URL | [이미지 열기](https://d3hzsvsrcwxkah.cloudfront.net/uploads/members/cfecf69d-6600-4b1f-9d89-69921f21a882.png) · [보기](#lv6) |
 
 ---
 

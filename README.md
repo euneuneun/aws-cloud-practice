@@ -7,7 +7,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.2-6DB33F?logo=springboot&logoColor=white)
 ![Spring Cloud AWS](https://img.shields.io/badge/Spring%20Cloud%20AWS-4.0.0--RC1-6DB33F?logo=spring&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20RDS%20%7C%20S3-FF9900?logo=amazonwebservices&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-ALB%20%7C%20ASG%20%7C%20EC2%20%7C%20RDS%20%7C%20S3%20%7C%20CloudFront-FF9900?logo=amazonwebservices&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 [![Deploy](https://github.com/euneuneun/aws-cloud-practice/actions/workflows/deploy.yml/badge.svg)](https://github.com/euneuneun/aws-cloud-practice/actions/workflows/deploy.yml)
 

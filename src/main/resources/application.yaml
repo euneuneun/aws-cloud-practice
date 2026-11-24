@@ -1,6 +1,8 @@
 spring:
   application:
     name: aws-cloud-practice
+  profiles:
+    default: local   # 프로필 지정 없이 실행하면 local 사용 (prod는 SPRING_PROFILES_ACTIVE=prod로 덮어씀)
   cloud:
     aws:
       region:
