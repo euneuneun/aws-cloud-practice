@@ -26,6 +26,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'    // @Valid, @NotBlank 등 요청값 검증
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'        // REST API(Spring MVC) + 내장 Tomcat
     implementation 'org.springframework.boot:spring-boot-h2console'             // H2 웹 콘솔(/h2-console), local 프로필에서 사용
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'       // AOP 의존성
 
     // ===== Spring Cloud AWS =====
     implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0-RC1')  // Spring Cloud AWS BOM: 아래 AWS 모듈들의 버전을 한 곳에서 맞춰 관리 (개별 버전 생략 가능)

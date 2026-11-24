@@ -14,7 +14,10 @@ public class LoggingInterceptor implements HandlerInterceptor {
     public boolean preHandle(
             HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        log.info("[API - LOG] Method: {}, URL: {}", request.getMethod(), request.getRequestURI());
+        log.info(
+                "[API - INTERCEPTOR - LOG] Method: {}, URL: {}",
+                request.getMethod(),
+                request.getRequestURI());
         return true;
     }
 }

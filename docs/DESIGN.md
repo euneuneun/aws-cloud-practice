@@ -15,7 +15,7 @@
 | `POST` | `/api/members` | [팀원 등록](#팀원-등록) |
 | `GET` | `/api/members/{memberId}` | [팀원 조회](#팀원-조회) |
 | `POST` | `/api/members/{memberId}/profile-image` | [프로필 이미지 업로드 (S3)](#프로필-이미지-업로드) |
-| `GET` | `/api/members/{memberId}/profile-image` | [프로필 이미지 Presigned URL 발급 (7일)](#프로필-이미지-url-조회) |
+| `GET` | `/api/members/{memberId}/profile-image` | [프로필 이미지 CloudFront URL 조회](#프로필-이미지-url-조회) |
 | `GET` | `/actuator/health` | 헬스 체크 |
 | `GET` | `/actuator/info` | 팀 이름 (Parameter Store `TEAM_NAME`) |
 
@@ -251,7 +251,7 @@ curl -X POST http://localhost:8080/api/members/1/profile-image \
 
 ### `GET` /api/members/{memberId}/profile-image
 
-팀원 프로필 이미지를 내려받을 수 있는 S3 Presigned URL을 발급합니다. URL은 발급 후 7일 동안 유효합니다.
+팀원 프로필 이미지를 조회할 수 있는 CloudFront URL을 반환합니다. URL 경로는 S3 key와 같고, 유효기간이 없습니다.
 
 ### Request
 
@@ -273,13 +273,13 @@ curl http://localhost:8080/api/members/1/profile-image
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `url` | `string` | 7일간 유효한 Presigned URL |
+| `url` | `string` | CloudFront 이미지 URL (`https://{CloudFront 도메인}/{S3 key}`) |
 
 ##### 응답 예시
 
 ```json
 {
-  "url": "https://{bucket}.s3.ap-northeast-2.amazonaws.com/uploads/members/{UUID}.png?X-Amz-Expires=604800&..."
+  "url": "https://d3hzsvsrcwxkah.cloudfront.net/uploads/members/3f2a9c1e-7b4d-4e8a-9f61-2d5c8b0a1e34.png"
 }
 ```
 
@@ -334,8 +334,9 @@ curl http://localhost:8080/api/members/1/profile-image
 400 공통 예외는 클라이언트 입장에서 모두 "요청 값이 잘못됨"이라 코드 하나로 합쳤고, 어떤 예외였는지는 로그의 예외 클래스로 확인합니다.
 
 **로그 전략**
-- 모든 API 요청: `LoggingInterceptor` → `INFO [API - LOG] Method: POST, URL: /api/members`
-- 예외 발생: `ERROR [API - ERROR] ...` + 스택트레이스
+- 모든 API 요청 (`/actuator/**` 제외): `LoggingInterceptor` → `INFO [API - INTERCEPTOR - LOG] Method: POST, URL: /api/members`
+- 컨트롤러 실행 전후: `LoggingAspect` → `INFO [API - AOP - LOG] AOP Before / AfterReturning / After Method: ..., URL: ...` (컨트롤러에서 예외가 나면 `ERROR [API - AOP - LOG] AOP ExceptionMethod: ...`)
+- 예외 처리: `LoggingAspect`가 `GlobalExceptionHandler` 실행 전에 `ERROR [API - AOP - LOG] AOP ExceptionHandler Method: ..., URL: ...` + 스택트레이스를 남깁니다.
 </details>
 
 
@@ -358,11 +359,12 @@ curl http://localhost:8080/api/members/1/profile-image
 src/main/java/com/awscloudpractice
 ├── AwsCloudPracticeApplication.java
 ├── common
-│   ├── config          # Webconfig: 인터셉터 등록
+│   ├── aop             # LoggingAspect: [API - AOP - LOG] 컨트롤러 실행 · 예외 로그
+│   ├── config          # Webconfig: 인터셉터 등록, LoggingAspect 빈 등록
 │   ├── exception       # GlobalExceptionHandler, BusinessException, ErrorCode, CommonErrorCode
 │   ├── interceptor     # LoggingInterceptor: [API - LOG] 요청 로그
 │   ├── response        # ErrorResponse: 공통 에러 응답 형태
-│   └── s3              # S3Service: 업로드, 삭제, Presigned URL 생성
+│   └── s3              # S3Service: 업로드, 삭제 (Presigned URL 생성 메서드는 현재 미사용)
 └── member
     ├── controller      # MemberController
     ├── dto
@@ -373,8 +375,8 @@ src/main/java/com/awscloudpractice
     ├── repository      # MemberRepository
     └── service         # MemberService
 src/main/resources
-├── application.yaml        # 공통: 리전, S3 버킷, 업로드 제한, Actuator 노출
-├── application-local.yaml  # H2
+├── application.yaml        # 공통: 기본 프로필(local), 리전, S3 버킷, CloudFront 도메인, 업로드 제한, Actuator 노출
+├── application-local.yaml  # H2 (기본 프로필)
 └── application-prod.yaml   # MySQL + Parameter Store
 Dockerfile
 docs/                       # 과제 제출물, 인프라 상세, 스크린샷
