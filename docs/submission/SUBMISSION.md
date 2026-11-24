@@ -9,7 +9,7 @@
 | LV 2 | Actuator Info URL | `http://52.79.42.65:8080/actuator/info` · [캡처](#lv2-1) |
 | LV 2 | RDS 인바운드 규칙 캡처 | [보기](#lv2-2) |
 | LV 3 | Presigned URL 접근 성공 (IAM Role) | [보기](#lv3) |
-| LV 4 | Actions 성공 · `docker ps` 캡처 | [보기](#lv4) |
+| LV 4 | Actions 성공 · `docker ps` · 컨테이너 로그 캡처 | [보기](#lv4) |
 | LV 5 | HTTPS 도메인 · Target Group 캡처 | `https://api.ked-aws.click` · [캡처](#lv5) |
 | LV 6 | CloudFront 이미지 URL | [이미지 열기](https://d3hzsvsrcwxkah.cloudfront.net/uploads/members/cfecf69d-6600-4b1f-9d89-69921f21a882.png) · [보기](#lv6) |
 
@@ -42,18 +42,28 @@
 
 **1) 서버에서 Presigned URL 발급**
 
-<img src="image/lv3-1.png" width="70%">
+<img src="image/lv3-1.png" width="80%">
 
 **2) 발급된 URL로 S3 객체 접근 성공 (200 OK)**
 
-<img src="image/lv3-2.png" width="70%">
+<img src="image/lv3-2.png" width="80%">
 
 <a id="lv4"></a>
-## LV 4 · GitHub Actions / docker ps
+## LV 4 · GitHub Actions / docker ps / 컨테이너 로그
 
-<img src="image/lv4-1.png" width="70%">
+> 저장소 루트의 [`Dockerfile`](../../Dockerfile)로 이미지를 빌드해 Docker Hub(`daeun123/aws-cloud-practice:latest`)에 올리고, EC2에서 이 이미지를 컨테이너로 실행합니다.
 
-<img src="image/lv4-2.png" width="70%">
+**1) GitHub Actions 배포 성공 (ci → cd)**
+
+<img src="image/lv4-1.png" width="80%">
+
+**2) EC2에서 컨테이너 실행 확인 (`docker ps`)**
+
+<img src="image/lv4-2.png" width="100%">
+
+**3) 컨테이너 실행 로그 (`docker logs`): prod 프로필 · Tomcat 8080 · 애플리케이션 시작 완료**
+
+<img src="image/lv4-3.png" width="1000%">
 
 <a id="lv5"></a>
 ## LV 5 · HTTPS 도메인 / Target Group
@@ -64,9 +74,21 @@
 
 **2) Target Group(대상 그룹) 이미지**
 
-<img src="image/lv5-2.png" width="60%">
+<img src="image/lv5-2.png" width="90%">
+
+**3)ALB에 ACM SSL/TLS 인증서가 연결되어 HTTPS(443) 리스너가 구성된 캡처**
+
+![lv5-3.png](image/lv5-3.png)
+
+
+**4)Auto Scaling Group의 Launch Template User Data에 컨테이너 이미지를 pull하고 컨테이너를 실행하는 스크립트**
+
+<img src="image/lv5-4.png" width="50%">
+
 
 
 <a id="lv6"></a>
 ## LV 6 · CloudFront 이미지 URL
 https://d3hzsvsrcwxkah.cloudfront.net/uploads/members/cfecf69d-6600-4b1f-9d89-69921f21a882.png
+
+![img.png](image/lv6.png)
